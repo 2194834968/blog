@@ -1,10 +1,19 @@
 package com.lzp.MiniBlog.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
+import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
 import com.lzp.MiniBlog.DAO.model.Favorite;
+import com.lzp.MiniBlog.DAO.model.Videos;
+import com.lzp.MiniBlog.common.respond.VideosRespond;
 import com.lzp.MiniBlog.service.FavoriteService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lzp.MiniBlog.service.UsersService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -17,4 +26,71 @@ import org.springframework.stereotype.Service;
 @Service
 public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> implements FavoriteService {
 
+    @Autowired
+    UsersService usersService;
+
+    @Autowired
+    FavoriteMapper favoriteMapper;
+
+    @Autowired
+    VideosMapper videosMapper;
+
+    @Override
+    public List<VideosRespond> favoriteList(Integer targetUserId, Integer userId){
+        //取得视频列表
+        List<Videos> videosList = QueryFavoriteVideoByUserId(targetUserId);
+
+        List<VideosRespond> respondList = new ArrayList<VideosRespond>();
+
+        //进行数据处理,查询作者信息以及当前用户是否喜欢
+        for(Videos videoTemp: videosList){
+            VideosRespond videosRespondTemp = new VideosRespond();
+
+            //数据处理
+            videosRespondTemp.setAuthor(usersService.userInfo(videoTemp.getUserId(),userId));
+            if(userId == 0){
+                videosRespondTemp.setFavorite(false);
+            }else{
+                videosRespondTemp.setFavorite(QueryVideoIsFavorite(videoTemp.getId(),userId));
+            }
+
+            videosRespondTemp.setId(videoTemp.getId());
+            videosRespondTemp.setTitle(videoTemp.getTitle());
+            videosRespondTemp.setPlayUrl(videoTemp.getPlayUrl());
+            videosRespondTemp.setCoverUrl(videoTemp.getCoverUrl());
+            videosRespondTemp.setFavoriteCount(videoTemp.getFavoriteCount());
+            videosRespondTemp.setCommentCount(videoTemp.getCommentCount());
+            videosRespondTemp.setCreatedAt(videoTemp.getCreatedAt());
+
+            respondList.add(videosRespondTemp);
+        }
+        return respondList;
+    }
+
+    private List<Videos> QueryFavoriteVideoByUserId(Integer targetUserId){
+        QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
+        favoriteWrapper.eq("user_id",targetUserId);
+        List<Favorite> FavoriteVideoIdList = favoriteMapper.selectList(favoriteWrapper);
+
+        List<Videos> videosList = new ArrayList<Videos>();
+        for(Favorite favoriteTemp: FavoriteVideoIdList){
+            videosList.add(QueryVideoById(favoriteTemp.getVideoId()) );
+        }
+        return videosList;
+    }
+
+    private Videos QueryVideoById(Integer videoId){
+        return videosMapper.selectById(videoId);
+    }
+
+    private boolean QueryVideoIsFavorite(Integer videoId, Integer userId){
+        QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
+        favoriteWrapper.eq("video_id",videoId);
+        favoriteWrapper.eq("user_id",userId);
+        Favorite favoriteTemp = favoriteMapper.selectOne(favoriteWrapper);
+        if(favoriteTemp != null){
+            return true;
+        }
+        return false;
+    }
 }

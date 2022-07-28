@@ -79,7 +79,7 @@ public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> impleme
 
         newVideo.setTitle(title);
         newVideo.setUserId(userId);
-        newVideo.setPlayUrl(data.substring(0,40) + "</div>");
+        newVideo.setPlayUrl(data.substring(0,40));
         newVideo.setCoverUrl(data);
         newVideo.setFavoriteCount(0);
         newVideo.setCommentCount(0);
