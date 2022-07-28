@@ -34,9 +34,10 @@ public class VideosController {
         //获取时间戳
         Date date = new Date();
         if(!latestTime.isEmpty()){
-            if(isTimeStr(latestTime)){
+            //判断时间戳是否正确
+            try {
                 date = timeChange(latestTime);
-            }else{
+            } catch (Exception e) {
                 return Result.fail(ResultCodeEnum.TIMESTAMP_WRONG);
             }
         }
@@ -106,25 +107,16 @@ public class VideosController {
         Integer targetUserId = null;
         //取出目标用户id
         if(!targetUserIdStr.isEmpty()){
-            targetUserId = Integer.valueOf(targetUserIdStr);
+            try {
+                targetUserId = Integer.valueOf(targetUserIdStr);
+            } catch (NumberFormatException e) {
+                return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
+            }
         }else{
             return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
         }
 
         return Result.ok(videosService.publishList(targetUserId,userId));
-    }
-
-    //判断时间戳是否正确
-    private boolean isTimeStr(String time){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = null;
-        try{
-            date = sdf.parse(time);
-        }catch (Exception e){
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 
     //时间戳转换成date

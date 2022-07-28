@@ -66,7 +66,11 @@ public class UsesController {
 
         //取出目标用户id
         if(!userIdStr.isEmpty()){
-            targetUserId = Integer.valueOf(userIdStr);
+            try {
+                targetUserId = Integer.valueOf(userIdStr);
+            } catch (NumberFormatException e) {
+                return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
+            }
         }else{
             return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
         }

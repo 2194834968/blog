@@ -16,4 +16,5 @@ import java.util.List;
  */
 public interface FavoriteService extends IService<Favorite> {
     public List<VideosRespond> favoriteList(Integer targetUserId, Integer userId);
+    public boolean favoriteAction(Integer userId, Integer videoId, Integer actionType);
 }

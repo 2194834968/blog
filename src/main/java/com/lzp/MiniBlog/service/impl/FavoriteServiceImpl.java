@@ -2,8 +2,10 @@ package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
+import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
 import com.lzp.MiniBlog.DAO.model.Favorite;
+import com.lzp.MiniBlog.DAO.model.Users;
 import com.lzp.MiniBlog.DAO.model.Videos;
 import com.lzp.MiniBlog.common.respond.VideosRespond;
 import com.lzp.MiniBlog.service.FavoriteService;
@@ -34,6 +36,9 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     @Autowired
     VideosMapper videosMapper;
+
+    @Autowired
+    UsersMapper usersMapper;
 
     @Override
     public List<VideosRespond> favoriteList(Integer targetUserId, Integer userId){
@@ -67,6 +72,131 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         return respondList;
     }
 
+    @Override
+    public boolean favoriteAction(Integer userId, Integer videoId, Integer actionType){
+        Favorite favorite = new Favorite();
+        favorite.setUserId(userId);
+        favorite.setVideoId(videoId);
+        //查询已存在的记录
+        Favorite favoriteTemp = QueryFavoriteVideoByUserIdAndVideoId(favorite);
+
+        if(actionType == 1 && favoriteTemp == null){
+            //在favorite表中添加/删除记录
+            insertFavorite(favorite);
+
+            //在user表中修改视频作者的Total_Favorite
+            int AuthorId = QueryVideoById(videoId).getUserId();
+            updateUser_TotalFavorite_ByUserId_1(AuthorId);
+
+            //在user表中修改点赞者的Favorite_Count
+            updateUser_FavoriteCount_ByUserId_1(userId);
+
+            //在video表中修改视频的Favorite_Count
+            updateVideo_FavoriteCount_ByVideoId_1(videoId);
+        }else if(actionType == 2 && favoriteTemp != null){
+            //在favorite表中添加/删除记录
+            deleteFavorite(favorite);
+
+            //在user表中修改视频作者的Total_Favorite
+            int AuthorId = QueryVideoById(videoId).getUserId();
+            updateUser_TotalFavorite_ByUserId_2(AuthorId);
+
+            //在user表中修改点赞者的Favorite_Count
+            updateUser_FavoriteCount_ByUserId_2(userId);
+
+            //在video表中修改视频的Favorite_Count
+            updateVideo_FavoriteCount_ByVideoId_2(videoId);
+        }else{
+            return false;
+        }
+
+        return true;
+    }
+
+    //点赞
+    private void updateUser_TotalFavorite_ByUserId_1(Integer userId){
+        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        userWrapper.eq("Id",userId);
+        userWrapper.last("FOR UPDATE");//上锁
+        Users userTemp = usersMapper.selectOne(userWrapper);
+
+        userTemp.setTotalFavorite(userTemp.getTotalFavorite() + 1);
+        int result = usersMapper.updateById(userTemp);
+    }
+
+    //点赞
+    private void updateUser_FavoriteCount_ByUserId_1(Integer userId){
+        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        userWrapper.eq("Id",userId);
+        userWrapper.last("FOR UPDATE");//上锁
+        Users userTemp = usersMapper.selectOne(userWrapper);
+
+        userTemp.setFavoriteCount(userTemp.getFavoriteCount() + 1);
+        int result = usersMapper.updateById(userTemp);
+    }
+
+    //点赞
+    private void updateVideo_FavoriteCount_ByVideoId_1(Integer videoId){
+        QueryWrapper<Videos> videosWrapper = new QueryWrapper<>();
+        videosWrapper.eq("Id",videoId);
+        videosWrapper.last("FOR UPDATE");//上锁
+        Videos videoTemp = videosMapper.selectOne(videosWrapper);
+
+        videoTemp.setFavoriteCount(videoTemp.getFavoriteCount() + 1);
+        int result = videosMapper.updateById(videoTemp);
+    }
+
+    //取消点赞
+    private void updateUser_TotalFavorite_ByUserId_2(Integer userId){
+        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        userWrapper.eq("Id",userId);
+        userWrapper.last("FOR UPDATE");//上锁
+        Users userTemp = usersMapper.selectOne(userWrapper);
+
+        userTemp.setTotalFavorite(userTemp.getTotalFavorite() - 1);
+        int result = usersMapper.updateById(userTemp);
+    }
+
+    //取消点赞
+    private void updateUser_FavoriteCount_ByUserId_2(Integer userId){
+        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        userWrapper.eq("Id",userId);
+        userWrapper.last("FOR UPDATE");//上锁
+        Users userTemp = usersMapper.selectOne(userWrapper);
+
+        userTemp.setFavoriteCount(userTemp.getFavoriteCount() - 1);
+        int result = usersMapper.updateById(userTemp);
+    }
+
+    //取消点赞
+    private void updateVideo_FavoriteCount_ByVideoId_2(Integer videoId){
+        QueryWrapper<Videos> videosWrapper = new QueryWrapper<>();
+        videosWrapper.eq("Id",videoId);
+        videosWrapper.last("FOR UPDATE");//上锁
+        Videos videoTemp = videosMapper.selectOne(videosWrapper);
+
+        videoTemp.setFavoriteCount(videoTemp.getFavoriteCount() - 1);
+        int result = videosMapper.updateById(videoTemp);
+    }
+
+    private void insertFavorite(Favorite favorite){
+        int result = favoriteMapper.insert(favorite);
+    }
+
+    private void deleteFavorite(Favorite favorite){
+        QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
+        favoriteWrapper.eq("user_id",favorite.getUserId());
+        favoriteWrapper.eq("video_id",favorite.getVideoId());
+        int result = favoriteMapper.delete(favoriteWrapper);
+    }
+
+    private Favorite QueryFavoriteVideoByUserIdAndVideoId(Favorite favorite){
+        QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
+        favoriteWrapper.eq("user_id",favorite.getUserId());
+        favoriteWrapper.eq("video_id",favorite.getVideoId());
+
+        return favoriteMapper.selectOne(favoriteWrapper);
+    }
     private List<Videos> QueryFavoriteVideoByUserId(Integer targetUserId){
         QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
         favoriteWrapper.eq("user_id",targetUserId);
