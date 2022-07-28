@@ -24,7 +24,7 @@ public class JwtUtils {
         HashMap<String,Object> map = new HashMap<>();
         //日历类，用于获取当前时间
         Calendar instance = Calendar.getInstance();
-        instance.add(Calendar.MINUTE,30);//设定过期时间30分钟
+        instance.add(Calendar.MINUTE,300);//设定过期时间300分钟/5小时
 
         String token = JWT.create()
                 .withHeader(map) //可以不设定，就是使用默认的

@@ -6,6 +6,7 @@ import com.lzp.MiniBlog.common.result.Result;
 import com.lzp.MiniBlog.common.result.ResultCodeEnum;
 import com.lzp.MiniBlog.common.token.JwtUtils;
 import com.lzp.MiniBlog.service.VideosService;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,27 +56,32 @@ public class VideosController {
         return Result.ok(videosService.feed(date,userId));
     }
 
+    @Data
+    private class PublishVideo{
+        private String data;
+        private String token;
+        private String title;
+    }
+
     @PostMapping("/publish/action")
-    public Result publish(@RequestParam(value = "data") String data ,
-                          @RequestParam(value = "token") String token,
-                          @RequestParam(value = "title") String title){
+    public Result publish(PublishVideo publishVideo){
         //取出用户id
         Integer userId = null;
         //校验token
-        if(!token.isEmpty()){
-            if(!JwtUtils.verifyToken(token)){
+        if(!publishVideo.token.isEmpty()){
+            if(!JwtUtils.verifyToken(publishVideo.token)){
                 return Result.fail(ResultCodeEnum.TOKEN_OUTTIME_OR_UN_EXIST);
             }
-            userId = JwtUtils.verifyTokenBackUserId(token);
+            userId = JwtUtils.verifyTokenBackUserId(publishVideo.token);
         }else{
             return Result.fail(ResultCodeEnum.NEED_TOKEN);
         }
 
-        if(data.isEmpty() || title.isEmpty()){
+        if(publishVideo.data.isEmpty() || publishVideo.title.isEmpty()){
             return Result.fail(ResultCodeEnum.NEED_DATA_OR_TITLE);
         }
 
-        boolean flag = videosService.publish(data, userId, title);
+        boolean flag = videosService.publish(publishVideo.data, userId, publishVideo.title);
         if(flag){
             return Result.ok();
         }
