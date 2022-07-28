@@ -3,6 +3,7 @@ package com.lzp.MiniBlog.common.token;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
@@ -54,14 +55,19 @@ public class JwtUtils {
     }
 
     /**
-     * @description 判断token是否过期
+     * @description 判断token是否过期以及是否有效
      * @author lee
      * @date 23:36 2022/3/31
      **/
 
     public static boolean verifyToken(String token) {
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256("OuNeiDeShouHaoHan")).build();
-        DecodedJWT decodedJWT = jwtVerifier.verify(token);
+        DecodedJWT decodedJWT;
+        try{
+            decodedJWT = jwtVerifier.verify(token);
+        } catch (JWTVerificationException e) {
+            return false;
+        }
 
         //日历类，用于获取当前时间
         Date date = new Date();

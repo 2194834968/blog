@@ -20,7 +20,7 @@ public enum ResultCodeEnum {
     //用户系统
     QUERY_USER_ERROR(904,"获取用户信息失败,请刷新或重新进入页面"),
     TOKEN_UN_EXIST(905,"您尚未登陆,请登陆"),
-    TOKEN_OUTTIME(906,"您的登陆已过期"),
+    TOKEN_OUTTIME_OR_UN_EXIST(906,"您的登陆已过期或token无效"),
 
     ;
 

@@ -40,7 +40,7 @@ public class VideosController {
         //校验token
         if(!token.isEmpty()){
             if(!JwtUtils.verifyToken(token)){
-                return Result.fail(ResultCodeEnum.TOKEN_OUTTIME);
+                return Result.fail(ResultCodeEnum.TOKEN_OUTTIME_OR_UN_EXIST);
             }
             userId = JwtUtils.verifyTokenBackUserId(token);
         }else{
