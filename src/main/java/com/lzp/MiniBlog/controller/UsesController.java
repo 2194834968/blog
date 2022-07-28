@@ -80,7 +80,7 @@ public class UsesController {
             }
             userId = JwtUtils.verifyTokenBackUserId(token);
         }else{
-            return Result.fail(ResultCodeEnum.TOKEN_UN_EXIST);
+            return Result.fail(ResultCodeEnum.NEED_TOKEN);
         }
 
 

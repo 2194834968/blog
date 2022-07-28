@@ -17,4 +17,7 @@ import java.util.List;
  */
 public interface VideosService extends IService<Videos> {
     public List<VideosRespond> feed(Date latestTime, Integer userId);
+    public List<VideosRespond> publishList(Integer targetUserId, Integer userId);
+    public boolean publish(String data, Integer userId, String title);
+
 }

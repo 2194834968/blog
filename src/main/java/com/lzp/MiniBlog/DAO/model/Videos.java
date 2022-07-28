@@ -32,11 +32,11 @@ public class Videos implements Serializable {
 
     @TableField("Play_Url")
     private String playUrl;
-    //文章内容
+    //文章简介
 
     @TableField("Cover_Url")
     private String coverUrl;
-    //文章简介
+    //文章内容
 
     @TableField("Favorite_Count")
     private Integer favoriteCount;

@@ -33,10 +33,15 @@ public class VideosController {
         //获取时间戳
         Date date = new Date();
         if(!latestTime.isEmpty()){
-            date = timeChange(latestTime);
+            if(isTimeStr(latestTime)){
+                date = timeChange(latestTime);
+            }else{
+                return Result.fail(ResultCodeEnum.TIMESTAMP_WRONG);
+            }
         }
 
         Integer userId = null;
+
         //校验token
         if(!token.isEmpty()){
             if(!JwtUtils.verifyToken(token)){
@@ -50,6 +55,73 @@ public class VideosController {
         return Result.ok(videosService.feed(date,userId));
     }
 
+    @PostMapping("/publish/action")
+    public Result publish(@RequestParam(value = "data") String data ,
+                          @RequestParam(value = "token") String token,
+                          @RequestParam(value = "title") String title){
+        //取出用户id
+        Integer userId = null;
+        //校验token
+        if(!token.isEmpty()){
+            if(!JwtUtils.verifyToken(token)){
+                return Result.fail(ResultCodeEnum.TOKEN_OUTTIME_OR_UN_EXIST);
+            }
+            userId = JwtUtils.verifyTokenBackUserId(token);
+        }else{
+            return Result.fail(ResultCodeEnum.NEED_TOKEN);
+        }
+
+        if(data.isEmpty() || title.isEmpty()){
+            return Result.fail(ResultCodeEnum.NEED_DATA_OR_TITLE);
+        }
+
+        boolean flag = videosService.publish(data, userId, title);
+        if(flag){
+            return Result.ok();
+        }
+        return Result.fail();
+    }
+
+    @GetMapping("/publish/list")
+    public Result publishList(@RequestParam(value = "token") String token,
+                              @RequestParam(value = "user_id") String targetUserIdStr){
+        //取出用户id
+        Integer userId = null;
+        //校验token
+        if(!token.isEmpty()){
+            if(!JwtUtils.verifyToken(token)){
+                return Result.fail(ResultCodeEnum.TOKEN_OUTTIME_OR_UN_EXIST);
+            }
+            userId = JwtUtils.verifyTokenBackUserId(token);
+        }else{
+            return Result.fail(ResultCodeEnum.NEED_TOKEN);
+        }
+
+        Integer targetUserId = null;
+        //取出目标用户id
+        if(!targetUserIdStr.isEmpty()){
+            targetUserId = Integer.valueOf(targetUserIdStr);
+        }else{
+            return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
+        }
+
+        return Result.ok(videosService.publishList(targetUserId,userId));
+    }
+
+    //判断时间戳是否正确
+    private boolean isTimeStr(String time){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = null;
+        try{
+            date = sdf.parse(time);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    //时间戳转换成date
     private Date timeChange(String time){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
