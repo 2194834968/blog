@@ -74,10 +74,10 @@ public class FavoriteController {
             try {
                 videoId = Integer.valueOf(videoIdStr);
             } catch (NumberFormatException e) {
-                return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
+                return Result.fail(ResultCodeEnum.QUERY_VIDEO_ERROR);
             }
         }else{
-            return Result.fail(ResultCodeEnum.QUERY_USER_ERROR);
+            return Result.fail(ResultCodeEnum.QUERY_VIDEO_ERROR);
         }
 
         Integer actionType = null;

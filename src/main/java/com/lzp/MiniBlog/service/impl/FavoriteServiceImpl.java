@@ -1,6 +1,7 @@
 package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
@@ -109,13 +110,12 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         }else{
             return false;
         }
-
         return true;
     }
 
     //点赞
     private void updateUser_TotalFavorite_ByUserId_1(Integer userId){
-        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
         Users userTemp = usersMapper.selectOne(userWrapper);
@@ -126,7 +126,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     //点赞
     private void updateUser_FavoriteCount_ByUserId_1(Integer userId){
-        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
         Users userTemp = usersMapper.selectOne(userWrapper);
@@ -137,7 +137,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     //点赞
     private void updateVideo_FavoriteCount_ByVideoId_1(Integer videoId){
-        QueryWrapper<Videos> videosWrapper = new QueryWrapper<>();
+        UpdateWrapper<Videos> videosWrapper = new UpdateWrapper<>();
         videosWrapper.eq("Id",videoId);
         videosWrapper.last("FOR UPDATE");//上锁
         Videos videoTemp = videosMapper.selectOne(videosWrapper);
@@ -148,7 +148,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     //取消点赞
     private void updateUser_TotalFavorite_ByUserId_2(Integer userId){
-        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
         Users userTemp = usersMapper.selectOne(userWrapper);
@@ -159,7 +159,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     //取消点赞
     private void updateUser_FavoriteCount_ByUserId_2(Integer userId){
-        QueryWrapper<Users> userWrapper = new QueryWrapper<>();
+        UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
         Users userTemp = usersMapper.selectOne(userWrapper);
@@ -170,7 +170,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     //取消点赞
     private void updateVideo_FavoriteCount_ByVideoId_2(Integer videoId){
-        QueryWrapper<Videos> videosWrapper = new QueryWrapper<>();
+        UpdateWrapper<Videos> videosWrapper = new UpdateWrapper<>();
         videosWrapper.eq("Id",videoId);
         videosWrapper.last("FOR UPDATE");//上锁
         Videos videoTemp = videosMapper.selectOne(videosWrapper);

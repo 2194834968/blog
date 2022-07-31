@@ -26,7 +26,12 @@ public enum ResultCodeEnum {
     TIMESTAMP_WRONG(907,"时间戳的格式错误！"),
     NEED_DATA_OR_TITLE(908,"缺少标题或正文内容"),
     ACTION_TYPE_ERROR(909,"无法识别或不存在的操作类别"),
-    FAVORITE_ERROR(910,"操作失败,请更新您的页面"),
+    FAVORITE_ERROR(910,"点赞失败,请更新您的页面"),
+    QUERY_COMMENT_ERROR(911,"获取评论信息失败,请刷新或重新进入页面"),
+    OPERATE_ERROR(912,"操作失败,请更新您的页面,检查参数是否正确"),
+    QUERY_VIDEO_ERROR(904,"获取视频信息失败,请刷新或重新进入页面"),
+
+
 
     ;
 
