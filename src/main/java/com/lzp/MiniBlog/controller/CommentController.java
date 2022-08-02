@@ -1,6 +1,7 @@
 package com.lzp.MiniBlog.controller;
 
 
+import com.lzp.MiniBlog.common.respond.CommentRespond;
 import com.lzp.MiniBlog.common.result.Result;
 import com.lzp.MiniBlog.common.result.ResultCodeEnum;
 import com.lzp.MiniBlog.common.token.JwtUtils;
@@ -76,10 +77,15 @@ public class CommentController {
             }
         }
 
-        if(actionType == 1){
+        if(actionType == 1 && !commentText.isEmpty()){
             //评论操作
-            return Result.ok(commentService.commentAction(userId, videoId, commentText));
-        }else if(actionType == 2){
+            CommentRespond commentRespond = commentService.commentAction(userId, videoId, commentText);
+            if(commentRespond != null){
+                return Result.ok(commentRespond);
+            }else{
+                return Result.fail(ResultCodeEnum.QUERY_VIDEO_ERROR);
+            }
+        }else if(actionType == 2 && !commentIdStr.isEmpty()){
             //删除评论
             if(commentService.deleteCommentAction(userId,videoId,commentId)){
                 return Result.ok();
@@ -87,7 +93,7 @@ public class CommentController {
                 return Result.fail(ResultCodeEnum.OPERATE_ERROR);
             }
         }else{
-            return Result.fail(ResultCodeEnum.ACTION_TYPE_ERROR);
+            return Result.fail(ResultCodeEnum.OPERATE_ERROR);
         }
     }
 
@@ -117,6 +123,7 @@ public class CommentController {
         }else{
             return Result.fail(ResultCodeEnum.QUERY_VIDEO_ERROR);
         }
+
 
         return Result.ok(commentService.commentList(userId, targetVideoId));
     }

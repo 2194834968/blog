@@ -31,4 +31,8 @@ public class Relation implements Serializable {
     private Integer followerId;
 
 
+    public Relation(Integer targetUserId, Integer userId) {
+        this.setFolloweeId(targetUserId);
+        this.setFollowerId(userId);
+    }
 }

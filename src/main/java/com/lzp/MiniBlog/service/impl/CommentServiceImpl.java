@@ -45,6 +45,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public CommentRespond commentAction(Integer userId, Integer videoId, String commentText){
+        //确认视频存在
+        Videos videosTemp = queryVideoIdByVideoId(videoId);
+        if(videosTemp == null){
+            return null;
+        }
         //添加评论记录
         Comment newComment = new Comment();
         Date date = new Date();
@@ -104,6 +109,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             commentRespondsList.add(commentRespond);
         }
         return commentRespondsList;
+    }
+
+    private Videos queryVideoIdByVideoId(Integer videoId){
+        return videosMapper.selectById(videoId);
     }
 
     private List<Comment> queryCommentListByVideoId(Integer videoId){

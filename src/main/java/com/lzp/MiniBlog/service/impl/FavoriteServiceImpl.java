@@ -75,6 +75,12 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     @Override
     public boolean favoriteAction(Integer userId, Integer videoId, Integer actionType){
+        //确认视频存在
+        Videos videosTemp = queryVideoIdByVideoId(videoId);
+        if(videosTemp == null){
+            return false;
+        }
+
         Favorite favorite = new Favorite();
         favorite.setUserId(userId);
         favorite.setVideoId(videoId);
@@ -84,100 +90,73 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         if(actionType == 1 && favoriteTemp == null){
             //在favorite表中添加/删除记录
             insertFavorite(favorite);
-
-            //在user表中修改视频作者的Total_Favorite
-            int AuthorId = QueryVideoById(videoId).getUserId();
-            updateUser_TotalFavorite_ByUserId_1(AuthorId);
-
-            //在user表中修改点赞者的Favorite_Count
-            updateUser_FavoriteCount_ByUserId_1(userId);
-
-            //在video表中修改视频的Favorite_Count
-            updateVideo_FavoriteCount_ByVideoId_1(videoId);
         }else if(actionType == 2 && favoriteTemp != null){
             //在favorite表中添加/删除记录
             deleteFavorite(favorite);
 
-            //在user表中修改视频作者的Total_Favorite
-            int AuthorId = QueryVideoById(videoId).getUserId();
-            updateUser_TotalFavorite_ByUserId_2(AuthorId);
-
-            //在user表中修改点赞者的Favorite_Count
-            updateUser_FavoriteCount_ByUserId_2(userId);
-
-            //在video表中修改视频的Favorite_Count
-            updateVideo_FavoriteCount_ByVideoId_2(videoId);
         }else{
             return false;
         }
+
+        //在user表中修改视频作者的Total_Favorite
+        int AuthorId = QueryVideoById(videoId).getUserId();
+        updateUser_TotalFavorite_ByUserId(AuthorId, actionType);
+
+        //在user表中修改点赞者的Favorite_Count
+        updateUser_FavoriteCount_ByUserId(userId, actionType);
+
+        //在video表中修改视频的Favorite_Count
+        updateVideo_FavoriteCount_ByVideoId(videoId, actionType);
         return true;
     }
 
-    //点赞
-    private void updateUser_TotalFavorite_ByUserId_1(Integer userId){
+    private Videos queryVideoIdByVideoId(Integer videoId){
+        return videosMapper.selectById(videoId);
+    }
+
+    private void updateUser_TotalFavorite_ByUserId(Integer userId, Integer actionType){
         UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
         Users userTemp = usersMapper.selectOne(userWrapper);
 
-        userTemp.setTotalFavorite(userTemp.getTotalFavorite() + 1);
+        if(actionType == 1){
+            userTemp.setTotalFavorite(userTemp.getTotalFavorite() + 1);
+        }else if(actionType == 2){
+            userTemp.setTotalFavorite(userTemp.getTotalFavorite() - 1);
+        }
         int result = usersMapper.updateById(userTemp);
     }
 
-    //点赞
-    private void updateUser_FavoriteCount_ByUserId_1(Integer userId){
+    private void updateUser_FavoriteCount_ByUserId(Integer userId, Integer actionType){
         UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
         Users userTemp = usersMapper.selectOne(userWrapper);
 
-        userTemp.setFavoriteCount(userTemp.getFavoriteCount() + 1);
+
+        if(actionType == 1){
+            userTemp.setFavoriteCount(userTemp.getFavoriteCount() + 1);
+        }else if(actionType == 2){
+            userTemp.setFavoriteCount(userTemp.getFavoriteCount() + 1);
+        }
         int result = usersMapper.updateById(userTemp);
     }
 
-    //点赞
-    private void updateVideo_FavoriteCount_ByVideoId_1(Integer videoId){
+    private void updateVideo_FavoriteCount_ByVideoId(Integer videoId, Integer actionType){
         UpdateWrapper<Videos> videosWrapper = new UpdateWrapper<>();
         videosWrapper.eq("Id",videoId);
         videosWrapper.last("FOR UPDATE");//上锁
         Videos videoTemp = videosMapper.selectOne(videosWrapper);
 
-        videoTemp.setFavoriteCount(videoTemp.getFavoriteCount() + 1);
+        if(actionType == 1){
+            videoTemp.setFavoriteCount(videoTemp.getFavoriteCount() + 1);
+        }else if(actionType == 2){
+            videoTemp.setFavoriteCount(videoTemp.getFavoriteCount() - 1);
+        }
         int result = videosMapper.updateById(videoTemp);
     }
 
-    //取消点赞
-    private void updateUser_TotalFavorite_ByUserId_2(Integer userId){
-        UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
-        userWrapper.eq("Id",userId);
-        userWrapper.last("FOR UPDATE");//上锁
-        Users userTemp = usersMapper.selectOne(userWrapper);
-
-        userTemp.setTotalFavorite(userTemp.getTotalFavorite() - 1);
-        int result = usersMapper.updateById(userTemp);
-    }
-
-    //取消点赞
-    private void updateUser_FavoriteCount_ByUserId_2(Integer userId){
-        UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
-        userWrapper.eq("Id",userId);
-        userWrapper.last("FOR UPDATE");//上锁
-        Users userTemp = usersMapper.selectOne(userWrapper);
-
-        userTemp.setFavoriteCount(userTemp.getFavoriteCount() - 1);
-        int result = usersMapper.updateById(userTemp);
-    }
-
-    //取消点赞
-    private void updateVideo_FavoriteCount_ByVideoId_2(Integer videoId){
-        UpdateWrapper<Videos> videosWrapper = new UpdateWrapper<>();
-        videosWrapper.eq("Id",videoId);
-        videosWrapper.last("FOR UPDATE");//上锁
-        Videos videoTemp = videosMapper.selectOne(videosWrapper);
-
-        videoTemp.setFavoriteCount(videoTemp.getFavoriteCount() - 1);
-        int result = videosMapper.updateById(videoTemp);
-    }
 
     private void insertFavorite(Favorite favorite){
         int result = favoriteMapper.insert(favorite);

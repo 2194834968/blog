@@ -41,9 +41,11 @@ public class Users implements Serializable {
     @TableField("Favorite_Count")
     private Integer favoriteCount;
 
+    //关注数目
     @TableField("Follow_Count")
     private Integer followCount;
 
+    //粉丝数目
     @TableField("Follower_Count")
     private Integer followerCount;
 

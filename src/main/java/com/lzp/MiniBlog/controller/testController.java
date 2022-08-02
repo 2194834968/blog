@@ -24,7 +24,8 @@ public class testController {
     VideosMapper videosMapper;
     @GetMapping("/test")
     public Result test(){
-        return Result.ok("这个接口就是测试一下");
+        return Result.ok("接口文档：https://www.apifox.cn/apidoc/shared-3ee2c0f4-568c-4757-b5ea-ebc8f7a82993/api-31628726更新计划以及Github地址：https://github.com/2194834968/blog");
+
     }
 
     /*

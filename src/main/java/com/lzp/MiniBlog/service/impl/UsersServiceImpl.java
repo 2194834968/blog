@@ -56,6 +56,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     @Override
     public Users userInfo(Integer targetUserId, Integer userId){
         Users userTemp = QueryUserById(targetUserId);
+        if(userTemp == null){
+            return null;
+        }
         userTemp.setFollow(QueryUserIsFollow(targetUserId,userId));
         return userTemp;
     }
@@ -71,6 +74,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
     private Users QueryUserById(Integer userId){
         Users userTemp = usersMapper.selectById(userId);
+        userTemp.setPassword("");
         return userTemp;
     }
 
