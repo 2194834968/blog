@@ -60,6 +60,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             return null;
         }
         userTemp.setFollow(QueryUserIsFollow(targetUserId,userId));
+        userTemp.setPassword("");
         return userTemp;
     }
     private boolean QueryUserIsFollow(Integer targetUserId, Integer userId){
@@ -74,7 +75,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
     private Users QueryUserById(Integer userId){
         Users userTemp = usersMapper.selectById(userId);
-        userTemp.setPassword("");
         return userTemp;
     }
 

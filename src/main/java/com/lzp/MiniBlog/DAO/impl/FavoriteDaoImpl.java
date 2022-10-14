@@ -1,7 +1,9 @@
-package com.lzp.MiniBlog.service.impl;
+package com.lzp.MiniBlog.DAO.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lzp.MiniBlog.DAO.FavoriteDao;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
@@ -10,9 +12,9 @@ import com.lzp.MiniBlog.DAO.model.Users;
 import com.lzp.MiniBlog.DAO.model.Videos;
 import com.lzp.MiniBlog.common.respond.VideosRespond;
 import com.lzp.MiniBlog.service.FavoriteService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lzp.MiniBlog.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +29,8 @@ import java.util.List;
  * @author LI
  * @since 2022-07-25
  */
-@Service
-public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> implements FavoriteService {
-
-    @Autowired
-    UsersService usersService;
+@Repository
+public class FavoriteDaoImpl implements FavoriteDao {
 
     @Autowired
     FavoriteMapper favoriteMapper;
@@ -43,81 +42,12 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     UsersMapper usersMapper;
 
     @Override
-    public List<VideosRespond> favoriteList(Integer targetUserId, Integer userId){
-        //取得视频列表
-        List<Videos> videosList = QueryFavoriteVideoByUserId(targetUserId);
-
-        List<VideosRespond> respondList = new ArrayList<VideosRespond>();
-
-        //进行数据处理,查询作者信息以及当前用户是否喜欢
-        for(Videos videoTemp: videosList){
-            VideosRespond videosRespondTemp = new VideosRespond();
-
-            //数据处理
-            videosRespondTemp.setAuthor(usersService.userInfo(videoTemp.getUserId(),userId));
-            if(userId == 0){
-                videosRespondTemp.setFavorite(false);
-            }else{
-                videosRespondTemp.setFavorite(QueryVideoIsFavorite(videoTemp.getId(),userId));
-            }
-
-            videosRespondTemp.setId(videoTemp.getId());
-            videosRespondTemp.setTitle(videoTemp.getTitle());
-            videosRespondTemp.setPlayUrl(videoTemp.getPlayUrl());
-            videosRespondTemp.setCoverUrl(videoTemp.getCoverUrl());
-            videosRespondTemp.setFavoriteCount(videoTemp.getFavoriteCount());
-            videosRespondTemp.setCommentCount(videoTemp.getCommentCount());
-            videosRespondTemp.setCreatedAt(videoTemp.getCreatedAt());
-
-            respondList.add(videosRespondTemp);
-        }
-        return respondList;
-    }
-
-    @Override
-    @Transactional
-    //@Transactional用于开启事务
-    public boolean favoriteAction(Integer userId, Integer videoId, Integer actionType){
-        //确认视频存在
-        Videos videosTemp = queryVideoIdByVideoId(videoId);
-        if(videosTemp == null){
-            return false;
-        }
-
-        Favorite favorite = new Favorite();
-        favorite.setUserId(userId);
-        favorite.setVideoId(videoId);
-        //查询已存在的记录
-        Favorite favoriteTemp = QueryFavoriteVideoByUserIdAndVideoId(favorite);
-
-        if(actionType == 1 && favoriteTemp == null){
-            //在favorite表中添加/删除记录
-            insertFavorite(favorite);
-        }else if(actionType == 2 && favoriteTemp != null){
-            //在favorite表中添加/删除记录
-            deleteFavorite(favorite);
-
-        }else{
-            return false;
-        }
-
-        //在user表中修改视频作者的Total_Favorite
-        int AuthorId = QueryVideoById(videoId).getUserId();
-        updateUser_TotalFavorite_ByUserId(AuthorId, actionType);
-
-        //在user表中修改点赞者的Favorite_Count
-        updateUser_FavoriteCount_ByUserId(userId, actionType);
-
-        //在video表中修改视频的Favorite_Count
-        updateVideo_FavoriteCount_ByVideoId(videoId, actionType);
-        return true;
-    }
-
-    private Videos queryVideoIdByVideoId(Integer videoId){
+    public Videos queryVideoIdByVideoId(Integer videoId){
         return videosMapper.selectById(videoId);
     }
 
-    private void updateUser_TotalFavorite_ByUserId(Integer userId, Integer actionType){
+    @Override
+    public void updateUser_TotalFavorite_ByUserId(Integer userId, Integer actionType){
         UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
@@ -131,7 +61,8 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         int result = usersMapper.updateById(userTemp);
     }
 
-    private void updateUser_FavoriteCount_ByUserId(Integer userId, Integer actionType){
+    @Override
+    public void updateUser_FavoriteCount_ByUserId(Integer userId, Integer actionType){
         UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
         userWrapper.last("FOR UPDATE");//上锁
@@ -146,7 +77,8 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         int result = usersMapper.updateById(userTemp);
     }
 
-    private void updateVideo_FavoriteCount_ByVideoId(Integer videoId, Integer actionType){
+    @Override
+    public void updateVideo_FavoriteCount_ByVideoId(Integer videoId, Integer actionType){
         UpdateWrapper<Videos> videosWrapper = new UpdateWrapper<>();
         videosWrapper.eq("Id",videoId);
         videosWrapper.last("FOR UPDATE");//上锁
@@ -161,25 +93,30 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     }
 
 
-    private void insertFavorite(Favorite favorite){
+    @Override
+    public void insertFavorite(Favorite favorite){
         int result = favoriteMapper.insert(favorite);
     }
 
-    private void deleteFavorite(Favorite favorite){
+    @Override
+    public void deleteFavorite(Favorite favorite){
         QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
         favoriteWrapper.eq("user_id",favorite.getUserId());
         favoriteWrapper.eq("video_id",favorite.getVideoId());
         int result = favoriteMapper.delete(favoriteWrapper);
     }
 
-    private Favorite QueryFavoriteVideoByUserIdAndVideoId(Favorite favorite){
+    @Override
+    public Favorite QueryFavoriteVideoByUserIdAndVideoId(Favorite favorite){
         QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
         favoriteWrapper.eq("user_id",favorite.getUserId());
         favoriteWrapper.eq("video_id",favorite.getVideoId());
 
         return favoriteMapper.selectOne(favoriteWrapper);
     }
-    private List<Videos> QueryFavoriteVideoByUserId(Integer targetUserId){
+
+    @Override
+    public List<Videos> QueryFavoriteVideoByUserId(Integer targetUserId){
         QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
         favoriteWrapper.eq("user_id",targetUserId);
         List<Favorite> FavoriteVideoIdList = favoriteMapper.selectList(favoriteWrapper);
@@ -191,11 +128,13 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         return videosList;
     }
 
-    private Videos QueryVideoById(Integer videoId){
+    @Override
+    public Videos QueryVideoById(Integer videoId){
         return videosMapper.selectById(videoId);
     }
 
-    private boolean QueryVideoIsFavorite(Integer videoId, Integer userId){
+    @Override
+    public boolean QueryVideoIsFavorite(Integer videoId, Integer userId){
         QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
         favoriteWrapper.eq("video_id",videoId);
         favoriteWrapper.eq("user_id",userId);

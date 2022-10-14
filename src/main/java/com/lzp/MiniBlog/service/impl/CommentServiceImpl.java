@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lzp.MiniBlog.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,6 +45,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     UsersMapper usersMapper;
 
     @Override
+    @Transactional
+    //@Transactional用于开启事务
     public CommentRespond commentAction(Integer userId, Integer videoId, String commentText){
         //确认视频存在
         Videos videosTemp = queryVideoIdByVideoId(videoId);
@@ -76,6 +79,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
+    @Transactional
+    //@Transactional用于开启事务
     public boolean deleteCommentAction(Integer userId, Integer videoId, Integer commentId){
         //确认评论信息（是否是本人所发？）
         Comment targetComment = queryCommentBy_UserId_VideoId_CommentId(userId, videoId, commentId);
