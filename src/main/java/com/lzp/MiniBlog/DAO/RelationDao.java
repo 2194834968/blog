@@ -25,7 +25,6 @@ public interface RelationDao{
 
     public void insertRelation(Relation relation);
 
-
     public void deleteRelation(Relation relation);
 
     public List<Relation> queryFollowerListByUserId(Integer targetUserId);

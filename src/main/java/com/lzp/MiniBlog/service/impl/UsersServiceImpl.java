@@ -1,6 +1,7 @@
 package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lzp.MiniBlog.DAO.UsersDao;
 import com.lzp.MiniBlog.DAO.mapper.RelationMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.model.Relation;
@@ -23,19 +24,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements UsersService {
 
+    /*
     @Autowired
     UsersMapper usersMapper;
 
     @Autowired
     RelationMapper relationMapper;
+    */
+
+    @Autowired
+    UsersDao usersDao;
 
     @Override
     public Integer register(Users newUser){
-        Users userTemp = QueryUserByUsername(newUser.getUsername());
+        Users userTemp = usersDao.QueryUserByUsername(newUser.getUsername());
         if(userTemp == null){
             userTemp = new Users(newUser.getUsername(), BCrypt.hashpw(newUser.getPassword(), BCrypt.gensalt(4)) );
-            InsertUser(userTemp);
-            return QueryUserByUsername(newUser.getUsername()).getId();
+            usersDao.InsertUser(userTemp);
+            return usersDao.QueryUserByUsername(newUser.getUsername()).getId();
         }else{
             return 0;
         }
@@ -44,7 +50,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public Integer login(Users user){
-        Users userTemp = QueryUserByUsername(user.getUsername());
+        Users userTemp = usersDao.QueryUserByUsername(user.getUsername());
         if(userTemp != null && BCrypt.checkpw(user.getPassword(), userTemp.getPassword()) ){
             return userTemp.getId();
         }else{
@@ -55,14 +61,15 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public Users userInfo(Integer targetUserId, Integer userId){
-        Users userTemp = QueryUserById(targetUserId);
+        Users userTemp = usersDao.QueryUserById(targetUserId);
         if(userTemp == null){
             return null;
         }
-        userTemp.setFollow(QueryUserIsFollow(targetUserId,userId));
+        userTemp.setFollow(usersDao.QueryUserIsFollow(targetUserId,userId));
         userTemp.setPassword("");
         return userTemp;
     }
+    /*
     private boolean QueryUserIsFollow(Integer targetUserId, Integer userId){
         QueryWrapper<Relation> relationWrapper = new QueryWrapper<>();
         relationWrapper.eq("followee_id",targetUserId);
@@ -88,4 +95,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     private void InsertUser(Users user){
         int result = usersMapper.insert(user);
     }
+
+     */
 }

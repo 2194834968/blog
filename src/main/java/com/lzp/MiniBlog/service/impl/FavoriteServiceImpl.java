@@ -2,6 +2,8 @@ package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.lzp.MiniBlog.DAO.FavoriteDao;
+import com.lzp.MiniBlog.DAO.VideosDao;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
@@ -34,6 +36,14 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     UsersService usersService;
 
     @Autowired
+    FavoriteDao favoriteDao;
+
+    @Autowired
+    VideosDao videosDao;
+
+    /*
+
+    @Autowired
     FavoriteMapper favoriteMapper;
 
     @Autowired
@@ -41,11 +51,14 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     @Autowired
     UsersMapper usersMapper;
+     */
+
+
 
     @Override
     public List<VideosRespond> favoriteList(Integer targetUserId, Integer userId){
         //取得视频列表
-        List<Videos> videosList = QueryFavoriteVideoByUserId(targetUserId);
+        List<Videos> videosList = favoriteDao.QueryFavoriteVideoByUserId(targetUserId);
 
         List<VideosRespond> respondList = new ArrayList<VideosRespond>();
 
@@ -58,7 +71,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
             if(userId == 0){
                 videosRespondTemp.setFavorite(false);
             }else{
-                videosRespondTemp.setFavorite(QueryVideoIsFavorite(videoTemp.getId(),userId));
+                videosRespondTemp.setFavorite(favoriteDao.QueryVideoIsFavorite(videoTemp.getId(),userId));
             }
 
             videosRespondTemp.setId(videoTemp.getId());
@@ -79,7 +92,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     //@Transactional用于开启事务
     public boolean favoriteAction(Integer userId, Integer videoId, Integer actionType){
         //确认视频存在
-        Videos videosTemp = queryVideoIdByVideoId(videoId);
+        Videos videosTemp = videosDao.QueryVideoById(videoId);
         if(videosTemp == null){
             return false;
         }
@@ -88,31 +101,32 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         favorite.setUserId(userId);
         favorite.setVideoId(videoId);
         //查询已存在的记录
-        Favorite favoriteTemp = QueryFavoriteVideoByUserIdAndVideoId(favorite);
+        Favorite favoriteTemp = favoriteDao.QueryFavoriteVideoByUserIdAndVideoId(favorite);
 
         if(actionType == 1 && favoriteTemp == null){
             //在favorite表中添加/删除记录
-            insertFavorite(favorite);
+            favoriteDao.insertFavorite(favorite);
         }else if(actionType == 2 && favoriteTemp != null){
             //在favorite表中添加/删除记录
-            deleteFavorite(favorite);
+            favoriteDao.deleteFavorite(favorite);
 
         }else{
             return false;
         }
 
         //在user表中修改视频作者的Total_Favorite
-        int AuthorId = QueryVideoById(videoId).getUserId();
-        updateUser_TotalFavorite_ByUserId(AuthorId, actionType);
+        int AuthorId = videosDao.QueryVideoById(videoId).getUserId();
+        favoriteDao.updateUser_TotalFavorite_ByUserId(AuthorId, actionType);
 
         //在user表中修改点赞者的Favorite_Count
-        updateUser_FavoriteCount_ByUserId(userId, actionType);
+        favoriteDao.updateUser_FavoriteCount_ByUserId(userId, actionType);
 
         //在video表中修改视频的Favorite_Count
-        updateVideo_FavoriteCount_ByVideoId(videoId, actionType);
+        favoriteDao.updateVideo_FavoriteCount_ByVideoId(videoId, actionType);
         return true;
     }
 
+    /*
     private Videos queryVideoIdByVideoId(Integer videoId){
         return videosMapper.selectById(videoId);
     }
@@ -205,4 +219,6 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
         }
         return false;
     }
+
+     */
 }

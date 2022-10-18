@@ -21,8 +21,6 @@ import java.util.List;
  */
 public interface FavoriteDao{
 
-    public Videos queryVideoIdByVideoId(Integer videoId);
-
     public void updateUser_TotalFavorite_ByUserId(Integer userId, Integer actionType);
 
     public void updateUser_FavoriteCount_ByUserId(Integer userId, Integer actionType);
@@ -33,11 +31,10 @@ public interface FavoriteDao{
 
     public void deleteFavorite(Favorite favorite);
 
+    //查询已存在的记录
     public Favorite QueryFavoriteVideoByUserIdAndVideoId(Favorite favorite);
 
     public List<Videos> QueryFavoriteVideoByUserId(Integer targetUserId);
-
-    public Videos QueryVideoById(Integer videoId);
 
     public boolean QueryVideoIsFavorite(Integer videoId, Integer userId);
 }

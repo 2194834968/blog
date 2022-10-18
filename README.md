@@ -20,7 +20,7 @@ https://www.apifox.cn/apidoc/shared-3ee2c0f4-568c-4757-b5ea-ebc8f7a82993/api-316
 * 视频封面地址cover_url改为文章内容
 * /BlogLee/publish/action/的data数据类型由file改为string
 
-* 用户数据库额外支持了total_favorited（被赞的总数量）和Favorite_Count（喜欢的视频总数量）两个int
+* 用户数据库额外支持了total_favorited（被赞的总数量）和Favorite_Count（喜欢的博文总数量）两个int
 
 ### 功能说明
 

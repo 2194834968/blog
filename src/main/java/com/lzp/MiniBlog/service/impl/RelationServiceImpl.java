@@ -2,6 +2,7 @@ package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.lzp.MiniBlog.DAO.RelationDao;
 import com.lzp.MiniBlog.DAO.mapper.RelationMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.model.Relation;
@@ -27,18 +28,23 @@ import java.util.List;
 @Service
 public class RelationServiceImpl extends ServiceImpl<RelationMapper, Relation> implements RelationService {
 
+    /*
     @Autowired
     RelationMapper relationMapper;
+
+    @Autowired
+    UsersMapper usersMapper;
+    */
 
     @Autowired
     UsersService usersService;
 
     @Autowired
-    UsersMapper usersMapper;
+    RelationDao relationDao;
 
     @Override
     public List<Users> followList(Integer targetUserId, Integer userId){
-        List<Relation> relationsList = queryFollowListByUserId(targetUserId);
+        List<Relation> relationsList = relationDao.queryFollowListByUserId(targetUserId);
         List<Users> followList = new ArrayList<Users>();
 
         for(Relation relationTemp : relationsList){
@@ -49,7 +55,7 @@ public class RelationServiceImpl extends ServiceImpl<RelationMapper, Relation> i
 
     @Override
     public List<Users> followerList(Integer targetUserId, Integer userId){
-        List<Relation> relationsList = queryFollowerListByUserId(targetUserId);
+        List<Relation> relationsList = relationDao.queryFollowerListByUserId(targetUserId);
         List<Users> followList = new ArrayList<Users>();
 
         for(Relation relationTemp : relationsList){
@@ -71,23 +77,24 @@ public class RelationServiceImpl extends ServiceImpl<RelationMapper, Relation> i
 
         //查询已有的记录确认关注记录是否存在
         Relation relation = new Relation(targetUserId,userId);
-        Relation relationExist = queryRelation(relation);
+        Relation relationExist = relationDao.queryRelation(relation);
         //确定类别
         //更新relation表
         if(actionType == 1 && relationExist == null){
-            insertRelation(relation);
+            relationDao.insertRelation(relation);
         }else if(actionType == 2 && relationExist != null){
-            deleteRelation(relation);
+            relationDao.deleteRelation(relation);
         }else{
             return false;
         }
         //更新user表targetUserId的Follower_Count
-        updateUser_FollowerCount_ByTargetUserId(targetUserId, actionType);
+        relationDao.updateUser_FollowerCount_ByTargetUserId(targetUserId, actionType);
         //更新user表UserId的Follow_Count
-        updateUser_FollowCount_ByTargetUserId(userId, actionType);
+        relationDao.updateUser_FollowCount_ByTargetUserId(userId, actionType);
         return true;
     }
 
+    /*
     private void updateUser_FollowerCount_ByTargetUserId(Integer userId, Integer actionType){
         UpdateWrapper<Users> userWrapper = new UpdateWrapper<>();
         userWrapper.eq("Id",userId);
@@ -147,4 +154,5 @@ public class RelationServiceImpl extends ServiceImpl<RelationMapper, Relation> i
         relationQueryWrapper.eq("follower_id",targetUserId);
         return relationMapper.selectList(relationQueryWrapper);
     }
+    */
 }

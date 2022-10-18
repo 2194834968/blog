@@ -2,6 +2,8 @@ package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lzp.MiniBlog.DAO.FavoriteDao;
+import com.lzp.MiniBlog.DAO.VideosDao;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
 import com.lzp.MiniBlog.DAO.mapper.RelationMapper;
 import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
@@ -31,19 +33,27 @@ import java.util.List;
 @Service
 public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> implements VideosService {
 
+    /*
     @Autowired
     FavoriteMapper favoriteMapper;
 
     @Autowired
     VideosMapper videosMapper;
+    */
 
     @Autowired
     private UsersService usersService;
 
+    @Autowired
+    VideosDao videosDao;
+
+    @Autowired
+    FavoriteDao favoriteDao;
+
     @Override
     public List<VideosRespond> feed(Date latestTime, Integer userId){
         //取得视频列表
-        List<Videos> videosList = QueryVideoByTimeLimit(latestTime);
+        List<Videos> videosList = videosDao.QueryVideoByTimeLimit(latestTime);
 
         List<VideosRespond> respondList = new ArrayList<VideosRespond>();
 
@@ -56,7 +66,7 @@ public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> impleme
             if(userId == 0){
                 videosRespondTemp.setFavorite(false);
             }else{
-                videosRespondTemp.setFavorite(QueryVideoIsFavorite(videoTemp.getId(),userId));
+                videosRespondTemp.setFavorite(favoriteDao.QueryVideoIsFavorite(videoTemp.getId(),userId));
             }
 
             videosRespondTemp.setId(videoTemp.getId());
@@ -89,14 +99,14 @@ public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> impleme
         newVideo.setCommentCount(0);
         newVideo.setCreatedAt(date);
 
-        insertVideo(newVideo);
+        videosDao.insertVideo(newVideo);
         return true;
     }
 
     @Override
     public List<VideosRespond> publishList(Integer targetUserId, Integer userId){
         //取得视频列表
-        List<Videos> videosList = QueryVideoByUserId(targetUserId);
+        List<Videos> videosList = videosDao.QueryVideoByUserId(targetUserId);
 
         List<VideosRespond> respondList = new ArrayList<VideosRespond>();
 
@@ -109,7 +119,7 @@ public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> impleme
             if(userId == 0){
                 videosRespondTemp.setFavorite(false);
             }else{
-                videosRespondTemp.setFavorite(QueryVideoIsFavorite(videoTemp.getId(),userId));
+                videosRespondTemp.setFavorite(favoriteDao.QueryVideoIsFavorite(videoTemp.getId(),userId));
             }
 
             videosRespondTemp.setId(videoTemp.getId());
@@ -125,6 +135,7 @@ public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> impleme
         return respondList;
     }
 
+    /*
     private void insertVideo(Videos videos){
         int result = videosMapper.insert(videos);
     }
@@ -152,6 +163,7 @@ public class VideosServiceImpl extends ServiceImpl<VideosMapper, Videos> impleme
         }
         return false;
     }
+    */
 
     /*
     private Videos QueryVideoBy_Data_UserId_Title_Date(String data,

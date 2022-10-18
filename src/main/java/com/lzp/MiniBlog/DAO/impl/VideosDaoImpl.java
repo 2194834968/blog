@@ -40,6 +40,11 @@ public class VideosDaoImpl implements VideosDao {
     }
 
     @Override
+    public Videos QueryVideoById(Integer videoId){
+        return videosMapper.selectById(videoId);
+    }
+
+    @Override
     public List<Videos> QueryVideoByUserId(Integer targetUserId){
         QueryWrapper<Videos> videosWrapper = new QueryWrapper<>();
         videosWrapper.eq("user_id",targetUserId);
@@ -52,18 +57,6 @@ public class VideosDaoImpl implements VideosDao {
         videosWrapper.le("created_At",latestTime);
         videosWrapper.last("limit 30");
         return videosMapper.selectList(videosWrapper);
-    }
-
-    @Override
-    public boolean QueryVideoIsFavorite(Integer videoId, Integer userId){
-        QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
-        favoriteWrapper.eq("video_id",videoId);
-        favoriteWrapper.eq("user_id",userId);
-        Favorite favoriteTemp = favoriteMapper.selectOne(favoriteWrapper);
-        if(favoriteTemp != null){
-            return true;
-        }
-        return false;
     }
 
     /*

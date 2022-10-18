@@ -2,6 +2,8 @@ package com.lzp.MiniBlog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.lzp.MiniBlog.DAO.CommentDao;
+import com.lzp.MiniBlog.DAO.UsersDao;
 import com.lzp.MiniBlog.DAO.mapper.CommentMapper;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
@@ -36,20 +38,25 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     UsersService usersService;
 
     @Autowired
-    CommentMapper commentMapper;
+    CommentDao commentDao;
 
+    /*
     @Autowired
     VideosMapper videosMapper;
 
     @Autowired
+    CommentMapper commentMapper;
+
+    @Autowired
     UsersMapper usersMapper;
+    */
 
     @Override
     @Transactional
     //@Transactional用于开启事务
     public CommentRespond commentAction(Integer userId, Integer videoId, String commentText){
         //确认视频存在
-        Videos videosTemp = queryVideoIdByVideoId(videoId);
+        Videos videosTemp = commentDao.queryVideoIdByVideoId(videoId);
         if(videosTemp == null){
             return null;
         }
@@ -62,9 +69,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         newComment.setCommentText(commentText);
         newComment.setCreateAt(date);
 
-        insertComment(newComment);
+        commentDao.insertComment(newComment);
         //修改video表中评论总数
-        updateVideo_CommentCount_ByVideoId_1(videoId);
+        commentDao.updateVideo_CommentCount_ByVideoId_1(videoId);
 
         CommentRespond commentRespond = new CommentRespond();
 
@@ -83,14 +90,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     //@Transactional用于开启事务
     public boolean deleteCommentAction(Integer userId, Integer videoId, Integer commentId){
         //确认评论信息（是否是本人所发？）
-        Comment targetComment = queryCommentBy_UserId_VideoId_CommentId(userId, videoId, commentId);
+        Comment targetComment = commentDao.queryCommentBy_UserId_VideoId_CommentId(userId, videoId, commentId);
         if(targetComment == null){
             return false;
         }
         //删除评论记录
-        deleteComment(targetComment);
+        commentDao.deleteComment(targetComment);
         //修改video表中评论总数
-        updateVideo_CommentCount_ByVideoId_2(targetComment.getVideoId());
+        commentDao.updateVideo_CommentCount_ByVideoId_2(targetComment.getVideoId());
         return true;
     }
 
@@ -99,7 +106,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         List<CommentRespond> commentRespondsList = new ArrayList<CommentRespond>();
 
         //查询评论列表
-        List<Comment> commentTempList = queryCommentListByVideoId(videoId);
+        List<Comment> commentTempList = commentDao.queryCommentListByVideoId(videoId);
 
         //对查询到的评论列表做数据处理
         for(Comment commentTemp : commentTempList){
@@ -115,6 +122,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
         return commentRespondsList;
     }
+
+    /*
 
     private Videos queryVideoIdByVideoId(Integer videoId){
         return videosMapper.selectById(videoId);
@@ -163,4 +172,5 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private void deleteComment(Comment comment){
         int result = commentMapper.deleteById(comment.getId());
     }
+    */
 }

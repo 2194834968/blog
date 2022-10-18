@@ -20,9 +20,9 @@ import java.util.List;
 public interface VideosDao {
     public void insertVideo(Videos videos);
 
+    public Videos QueryVideoById(Integer videoId);
+
     public List<Videos> QueryVideoByUserId(Integer targetUserId);
 
     public List<Videos> QueryVideoByTimeLimit(Date latestTime);
-
-    public boolean QueryVideoIsFavorite(Integer videoId, Integer userId);
 }

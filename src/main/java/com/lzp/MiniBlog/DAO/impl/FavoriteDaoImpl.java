@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lzp.MiniBlog.DAO.FavoriteDao;
+import com.lzp.MiniBlog.DAO.VideosDao;
 import com.lzp.MiniBlog.DAO.mapper.FavoriteMapper;
 import com.lzp.MiniBlog.DAO.mapper.UsersMapper;
 import com.lzp.MiniBlog.DAO.mapper.VideosMapper;
@@ -41,10 +42,9 @@ public class FavoriteDaoImpl implements FavoriteDao {
     @Autowired
     UsersMapper usersMapper;
 
-    @Override
-    public Videos queryVideoIdByVideoId(Integer videoId){
-        return videosMapper.selectById(videoId);
-    }
+    @Autowired
+    VideosDao videosDao;
+
 
     @Override
     public void updateUser_TotalFavorite_ByUserId(Integer userId, Integer actionType){
@@ -106,6 +106,7 @@ public class FavoriteDaoImpl implements FavoriteDao {
         int result = favoriteMapper.delete(favoriteWrapper);
     }
 
+    //查询已存在的记录
     @Override
     public Favorite QueryFavoriteVideoByUserIdAndVideoId(Favorite favorite){
         QueryWrapper<Favorite> favoriteWrapper = new QueryWrapper<>();
@@ -123,14 +124,9 @@ public class FavoriteDaoImpl implements FavoriteDao {
 
         List<Videos> videosList = new ArrayList<Videos>();
         for(Favorite favoriteTemp: FavoriteVideoIdList){
-            videosList.add(QueryVideoById(favoriteTemp.getVideoId()) );
+            videosList.add(videosDao.QueryVideoById(favoriteTemp.getVideoId()) );
         }
         return videosList;
-    }
-
-    @Override
-    public Videos QueryVideoById(Integer videoId){
-        return videosMapper.selectById(videoId);
     }
 
     @Override
